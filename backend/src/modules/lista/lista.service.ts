@@ -40,12 +40,12 @@ export class ListaService {
 
         //Borramos los que ya no se encuentran en la nueva lista.
         const listaSnapshot = await listaRef.get()
-        const listaEnBD = listaSnapshot.docs.map(doc => doc.data().id as entradaLista )
+        const listaEnBD = listaSnapshot.docs.map(doc => doc.data().id as number )
         
             //Tomamos las entradas en el backend, les quitamos las que encontramos en el frontend, y las que sobran son las que se eliminan.
         const idsListaEnFrontend = nuevaLista.map( entrada => entrada.id)
 
-        const entradasBorradas = listaEnBD.filter( entrada => !idsListaEnFrontend.includes(entrada.id) )
+        const entradasBorradas = listaEnBD.filter( entrada => !idsListaEnFrontend.includes(entrada) )
         await Promise.all(entradasBorradas.map( async (entrada) => {
             const entradaRef = listaRef.doc(entrada.toString())
             await entradaRef.delete()
