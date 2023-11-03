@@ -1,7 +1,8 @@
-import { useReducer, useState } from "react" 
+import { useReducer, useState, useEffect } from "react" 
 import { Button, Card, CardContent, Grid, IconButton, TextField } from "@mui/material"
 import { AddCircleOutline as AddCircleOutlineIcon } from "@mui/icons-material"
 import Entrada from "./Entrada"
+import axios from "axios"
 
 export interface entradaLista {
     id: number
@@ -14,7 +15,9 @@ export type listaReducerActions =
     { type: "agregar", payload: { contenido: string } } | 
     { type: "seleccionar", payload: { id: entradaLista["id"], seleccionada: entradaLista["seleccionada"] } } | 
     { type: "borrar-seleccionados" } | 
-    { type: "borrar-todos" } 
+    { type: "borrar-todos" } |
+    { type: "set-lista", payload: { listaEnBD:entradaLista[] } }
+
 function listaReducer(lista:entradaLista[], action: listaReducerActions) {
     switch (action.type) {
         case "agregar": {
@@ -38,6 +41,10 @@ function listaReducer(lista:entradaLista[], action: listaReducerActions) {
         case "borrar-todos": {
             return []
         }
+        case "set-lista": {
+            const { listaEnBD } = action.payload
+            return listaEnBD
+        }
     }
 }
 
@@ -57,7 +64,19 @@ export default function Lista() {
         setMensajeErrorInput(false)
     }
 
+    //Obtener la lista de la BD al ingresar por primera vez
+    useEffect(() => {
+        async function fetchLista() {
+            const { data: listaEnBD } = await axios.get<entradaLista[]>("/api/lista")
+            setLista({ type: "set-lista", payload: { listaEnBD } })
+        }
+        fetchLista()
+    }, [setLista])
 
+    //Actualizar la lista de la BD 
+    useEffect(() => {
+        axios.post("/api/lista", lista)
+    }, [lista])
 
     return (
         <main>
